@@ -1,4 +1,7 @@
-
+import { firebaseConfig } from './config.js';
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 const listenSend = document.getElementById('sendMsg').addEventListener('click', sMbuttonClicked);
 const messageLine = document.getElementById('chatInput');
 const messut = document.getElementById('chatWindow');

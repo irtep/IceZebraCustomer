@@ -1,7 +1,7 @@
 {
   "name": "IceZebraChatSystemsCUI001",
   "version": "0.0.1",
-  "description": "socket.io app",
+  "description": "chat app, customer side",
   "dependencies": {
     "express": "^4.17.1",
     "http": "0.0.1-security"
