@@ -25,6 +25,7 @@ messageLine.addEventListener("keydown", function (e) {
         const freshMsg = sendMessage(myChat.myName, messageLine.value);
         messageLine.value = '';
         myChat.messages.push(freshMsg);
+        console.log('myChat: ', myChat);
         db.collection('chats').doc(myChat.docRefId).update({
           messages: myChat.messages
         });
@@ -48,6 +49,7 @@ function sMbuttonClicked() {
     const freshMsg = sendMessage(myChat.myName, messageLine.value);
     messageLine.value = '';
     myChat.messages.push(freshMsg);
+    console.log('sending, docrefid...', myChat);
     db.collection('chats').doc(myChat.docRefId).update({
       messages: myChat.messages
     });
@@ -80,18 +82,49 @@ function subName() {
       const customerEnters = sendMessage(myChat.myName, 'avasi chatin.');
       myChat.messages.push(customerEnters);
       //  writeChatData(myChat.id, myChat.myName, myChat.messages);
-      db.collection("chats").add({
+      /*
+      db.collection("chats").doc(myChat.id).set({
+          name: "Los Angeles",
+          state: "CA",
+          country: "USA"
+      })
+      */
+      //db.collection("chats").add({
+      //console.log('myChat, myChat.id', myChat, myChat.id);
+      //const newId = JSON.stringify(myChat.id);
+      // start connection check db
+      const seconds = new Date().getTime() / 1000;
+      db.collection('connectionCheck').doc(myChat.id).set({
+        lastCheck: seconds
+      });
+      // this will send connection check to server,
+      // if this will not be received, the chat will be terminated
+      setInterval( () => {
+        console.log('sending connectionCheck');
+        const newSeconds = new Date().getTime() / 1000;
+        db.collection('connectionCheck').doc(myChat.id).update({
+          lastCheck: newSeconds
+        });
+      }, 50000);
+      // start chat db
+      db.collection("chats").doc(myChat.id).set({
         chatId: myChat.id,
         name: myChat.myName,
-        messages: myChat.messages
-      })
-      .then(function(docRef) {
-        console.log("Document written with ID: ", docRef.id);
-        myChat.docRefId = docRef.id;
-      })
-      .catch(function(error) {
-        console.error("Error adding document: ", error);
+        messages: myChat.messages,
+        hasAgent: false,
+        agent: null,
+        terminated: false,
+        borders: 'yellowBorders',
+        docRefId: myChat.id
       });
+      myChat.docRefId = myChat.id;
+  //    .then(function(docRef) {
+  //      console.log("Document written with ID: ", docRef.id);
+  //      myChat.docRefId = docRef.id;
+  //    })
+  //    .catch(function(error) {
+  //      console.error("Error adding document: ", error);
+  //    });
     } else {
       console.log('error in logging in');
     }
@@ -112,6 +145,9 @@ db.collection("chats").orderBy("name").onSnapshot(snapshot => {
     } else if (change.type === 'modified') {
       if (change.doc.data().chatId === myChat.id) {
         messut.innerHTML += change.doc.data().messages[change.doc.data().messages.length - 1];
+        myChat.messages.push(change.doc.data().messages[change.doc.data().messages.length - 1]);
+        // scrolling to down
+        messut.scrollTop = messut.scrollHeight;
       }
     }
   });
@@ -121,9 +157,16 @@ window.onload = ( ()=> {
   // focus on command line:
   customersName.focus();
 });
-// when window is closed
-window.onbeforeunload = ( ()=> {
-  // at this point if needed could save the chat to archives.
-  // Delete old chat from database
-  db.collection("chats").doc(myChat.docRefId).delete();
+//window.onbeforeunload = ( ()=> {
+ // this doesnt really work.. closing is too fast, gotta do pinging system to decide when user is disconnected.
+/*
+ const customerLeaves = sendMessage(myChat.myName, 'sulki chatin.');
+ myChat.messages.push(customerLeaves);
+ db.collection('chats').doc(myChat.docRefId).update({
+   messages: myChat.messages,
+   terminated: true
+ });
+ // Delete old chat from database
+ db.collection("chats").doc(myChat.docRefId).delete();
 });
+*/

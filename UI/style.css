@@ -23,6 +23,7 @@ body {
   height: 70vh;
   width: 70vw;
   text-align: left;
+  overflow-y: scroll;
 }
 #chatInput {
   width: 62vw;
